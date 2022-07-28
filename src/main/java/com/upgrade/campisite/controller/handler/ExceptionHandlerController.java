@@ -1,4 +1,4 @@
-package com.upgrade.campisite.controller;
+package com.upgrade.campisite.controller.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
