@@ -1,0 +1,6 @@
+reservation:
+  validator:
+    max-days: 3
+    minimum-days-ahead-of-arrival: 1
+    up-to-months-in-advance: 1
+  default-range-months-search: 1
