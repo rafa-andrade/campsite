@@ -20,8 +20,8 @@ mvn dockerfile:build
 ### DataBase
 Campsite project is using H2 relational database for demonstration and proof of concept, it should be replaced by a stable database server in real production application as PostgreSQL  
 
-###Cache
+### Cache
 Campsite project is using ```ConcurrentMapCacheManager``` from spring for demonstration and proof of concept, it should be replaced by a stable cache server in real production application as Redis
 
-###API Documentation
+### API Documentation
 http://localhost:8080/swagger-ui/index.html
