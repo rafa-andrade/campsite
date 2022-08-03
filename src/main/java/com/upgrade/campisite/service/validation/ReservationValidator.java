@@ -57,14 +57,16 @@ public class ReservationValidator {
         LocalDate firstDayOfMonthArrival = reservation.getArrivalDate().withDayOfMonth(1);
         LocalDate lastDayOfMonthDeparture = reservation.getDepartureDate().with(TemporalAdjusters.lastDayOfMonth());
 
-        //find reservedDates by month to use cache
         Map<LocalDate, Reservation> reservedDates = Stream.iterate(firstDayOfMonthArrival, date -> date.plusMonths(1))
                 .limit(ChronoUnit.MONTHS.between(firstDayOfMonthArrival, lastDayOfMonthDeparture) + 1)
                 .flatMap(date -> reservedDateService.getReservedDates(date, date.with(TemporalAdjusters.lastDayOfMonth())).entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         reservation.loadDays();
-        if (reservation.getDays().stream().anyMatch(day -> reservedDates.containsKey(day.getReservationDay()))) {
+        if (reservation.getDays().stream().anyMatch(day -> {
+            Reservation originalReservation = reservedDates.get(day.getReservationDay());
+            return originalReservation != null && (reservation.getId() == 0 || originalReservation.getId() != reservation.getId());
+        })) {
             throw new IllegalArgumentException("Selected range is already reserved");
         }
         return true;

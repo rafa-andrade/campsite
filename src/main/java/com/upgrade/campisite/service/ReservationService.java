@@ -8,8 +8,10 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.nonNull;
@@ -38,18 +40,19 @@ public class ReservationService {
     @Transactional
     @CacheEvict(cacheNames=ReservedDateService.RESERVATION_CACHE_NAME, allEntries=true)
     public void modify(long reservationId, Reservation reservationUpdate) {
-        reservationValidator.validate(reservationUpdate);
-
         Reservation reservation = ofNullable(reservationRepository.getReferenceById(reservationId))
                 .orElseThrow(() -> new NoSuchElementException("No reservation found"));
+        reservationUpdate.setId(reservation.getId());
+
+        reservationValidator.validate(reservationUpdate);
 
         if (nonNull(reservation.getCancellationDate())) {
             throw new UnsupportedOperationException("Not able to modify canceled reservation");
         }
 
+        reservation.getDays().removeAll(reservation.getDays().stream().filter(day -> !reservationUpdate.getDays().contains(day)).collect(Collectors.toList()));
+        reservation.getDays().addAll(reservationUpdate.getDays().stream().filter(day -> !reservation.getDays().contains(day)).collect(Collectors.toList()));
         reservationUpdate.getDays().forEach(day -> day.setReservation(reservation));
-        reservation.getDays().clear();
-        reservation.getDays().addAll(reservationUpdate.getDays());
 
         reservation.setModificationDate(now());
         reservation.setArrivalDate(reservationUpdate.getArrivalDate());
